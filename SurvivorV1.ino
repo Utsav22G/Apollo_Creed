@@ -13,6 +13,7 @@
 //      angle = 94827-6000;
 //
 // Waiting phase:
+//  The robot will now start to integrate the gyro over time to estimate
 //  the angle.  Once the angle gets within +/- 3 degrees of vertical,
 //  we transition into the armed phase.  A buzzer will sound to indicate
 //  this transition.
