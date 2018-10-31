@@ -49,6 +49,9 @@ extern int32_t distanceRight;
 float vL, vR, prevVL, prevVR, totalDistanceLeft, totalDistanceRight;
 float leftMotorPWM = 0;
 float rightMotorPWM = 0;
+float totalErrorVelocityL = 0;
+float totalErrorVelocityR = 0;
+
 bool directionFlag = true;
 
 void balanceDoDriveTicks();
@@ -62,7 +65,7 @@ Balboa32U4Encoders encoders;
 Balboa32U4Buzzer buzzer;
 Balboa32U4ButtonA buttonA;
 
-void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, float vR, float angleRad, float angleRadAccum) {
+void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, float vR, float angleRad, float angleRadAccum, float deltaT) {
   /* You will fill this function in with your code to run the race.  The inputs to the function are:
    *    totalDistanceLeft: the total distance travelled by the left wheel (meters) as computed by the encoders
    *    totalDistanceRight: the total distance travelled by the right wheel (meters) as computed by the encoders
@@ -70,33 +73,21 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    vR: the velocity of the right wheel (m/s) measured over the last 10ms
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
+   *    deltaT: the change in time since the last iteration
    */
-  int kp = 1500;
-  int ki = 100;
+  int kpAngle = 2970;
+  int kiAngle = 200;
+  int kpVelocity = 4000;
+  int kiVelocity = 300;
   float vAverage = (vL + vR) / 2.0;
   float totalDistanceAverage = (totalDistanceLeft + totalDistanceRight) / 2.0;
-  if(directionFlag){
-    if(vAverage < 0.15){
-      leftMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-    }
-    else{
-      leftMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      directionFlag = false;
-    }
-  }
-  else{
-    if(vAverage > -0.15){
-      leftMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-    }
-    else{
-      leftMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      directionFlag = true;
-    }
-  }
+  float desiredVelocity = kpAngle*angleRad + kiAngle*angleRadAccum;
+  float errorVelocityL = (desiredVelocity - vL);
+  float errorVelocityR = (desiredVelocity - vR);
+  totalErrorVelocityL += errorVelocityL * deltaT;
+  totalErrorVelocityR += errorVelocityR * deltaT;
+  leftMotorPWM = kpVelocity*errorVelocityL + kiVelocity*totalErrorVelocityL;
+  rightMotorPWM = kpVelocity*errorVelocityR + kiVelocity*totalErrorVelocityR;
 }
 
 uint32_t prev_time;
@@ -248,7 +239,7 @@ void loop()
     totalDistanceRight = METERS_PER_CLICK*distanceRight;
     angle_rad_accum += angle_rad*delta_t;
 
-    updatePWMs(totalDistanceLeft, totalDistanceRight, vL, vR, angle_rad, angle_rad_accum);
+    updatePWMs(totalDistanceLeft, totalDistanceRight, vL, vR, angle_rad, angle_rad_accum, delta_t);
 
     // if the robot is more than 45 degrees, shut down the motor
     if(start_flag && fabs(angle_rad) > FORTY_FIVE_DEGREES_IN_RADIANS)

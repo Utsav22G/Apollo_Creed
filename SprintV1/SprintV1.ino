@@ -49,6 +49,9 @@ extern int32_t distanceRight;
 float vL, vR, prevVL, prevVR, totalDistanceLeft, totalDistanceRight;
 float leftMotorPWM = 0;
 float rightMotorPWM = 0;
+float velocityErrorL=0;
+float velocityErrorR=0;
+
 bool directionFlag = true;
 
 void balanceDoDriveTicks();
@@ -75,28 +78,11 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   int ki = 100;
   float vAverage = (vL + vR) / 2.0;
   float totalDistanceAverage = (totalDistanceLeft + totalDistanceRight) / 2.0;
-  if(directionFlag){
-    if(vAverage < 0.15){
-      leftMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-    }
-    else{
-      leftMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      directionFlag = false;
-    }
-  }
-  else{
-    if(vAverage > -0.15){
-      leftMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-    }
-    else{
-      leftMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      directionFlag = true;
-    }
-  }
+  //float desiredVelocity = kp*(angleRad + 0.05) + ki*angleRadAccum;
+  leftMotorPWM = kp*(angleRad + 0.05) + ki*angleRadAccum;
+  rightMotorPWM = kp*(angleRad + 0.05)+ki*angleRadAccum;
+  //velocityErrorL = velocityErrorL + (desiredVelocity - vL) * 0.01;
+  //velocityErrorR = velocityErrorR + (desiredVelocity - vR) * 0.01; 
 }
 
 uint32_t prev_time;
