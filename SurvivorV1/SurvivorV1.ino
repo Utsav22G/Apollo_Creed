@@ -71,7 +71,7 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
-  int kp = 1500;
+  int kp = 1462;
   int ki = 100;
   float vAverage = (vL + vR) / 2.0;
   float totalDistanceAverage = (totalDistanceLeft + totalDistanceRight) / 2.0;
@@ -81,19 +81,19 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
       rightMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
     }
     else{
-      leftMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
+      leftMotorPWM = kp*(angleRad+0.07) + ki*angleRadAccum;
+      rightMotorPWM = kp*(angleRad+0.07) + ki*angleRadAccum;
       directionFlag = false;
     }
   }
   else{
     if(vAverage > -0.15){
-      leftMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad+0.1) + ki*angleRadAccum;
+      leftMotorPWM = kp*(angleRad+0.07) + ki*angleRadAccum;
+      rightMotorPWM = kp*(angleRad+0.07) + ki*angleRadAccum;
     }
     else{
       leftMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
-      rightMotorPWM = kp*(angleRad-0.05) + ki*angleRadAccum;
+      rightMotorPWM = kp*(angleRad+0.05) + ki*angleRadAccum;
       directionFlag = true;
     }
   }
