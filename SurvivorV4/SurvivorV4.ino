@@ -49,10 +49,12 @@ extern int32_t distanceRight;
 float vL, vR, prevVL, prevVR, totalDistanceLeft, totalDistanceRight;
 float leftMotorPWM = 0;
 float rightMotorPWM = 0;
-float totalErrorVelocityL = 0;
-float totalErrorVelocityR = 0;
-
+float totalAngleRad = 0;
 bool directionFlag = true;
+float vErrorAccumL = 0;
+float vErrorAccumR = 0;
+float angleErrorAccum = 0;
+
 
 void balanceDoDriveTicks();
 
@@ -65,7 +67,7 @@ Balboa32U4Encoders encoders;
 Balboa32U4Buzzer buzzer;
 Balboa32U4ButtonA buttonA;
 
-void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, float vR, float angleRad, float angleRadAccum, float deltaT) {
+void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, float vR, float angleRad, float angleRadAccum, float custom_delta_T) {
   /* You will fill this function in with your code to run the race.  The inputs to the function are:
    *    totalDistanceLeft: the total distance travelled by the left wheel (meters) as computed by the encoders
    *    totalDistanceRight: the total distance travelled by the right wheel (meters) as computed by the encoders
@@ -73,21 +75,26 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    vR: the velocity of the right wheel (m/s) measured over the last 10ms
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
-   *    deltaT: the change in time since the last iteration
    */
-  int kpAngle = 2970;
-  int kiAngle = 200;
-  int kpVelocity = 4000;
-  int kiVelocity = 300;
-  float vAverage = (vL + vR) / 2.0;
-  float totalDistanceAverage = (totalDistanceLeft + totalDistanceRight) / 2.0;
-  float desiredVelocity = kpAngle*angleRad + kiAngle*angleRadAccum;
-  float errorVelocityL = (desiredVelocity - vL);
-  float errorVelocityR = (desiredVelocity - vR);
-  totalErrorVelocityL += errorVelocityL * deltaT;
-  totalErrorVelocityR += errorVelocityR * deltaT;
-  leftMotorPWM = kpVelocity*errorVelocityL + kiVelocity*totalErrorVelocityL;
-  rightMotorPWM = kpVelocity*errorVelocityR + kiVelocity*totalErrorVelocityR;
+  float kp = -6;
+  float ki = -36;
+  float motor_kp = 500;
+  float motor_ki = 5000;
+  float vDesired = 0;
+  float vErrorL = 0;
+  float vErrorR = 0;
+  float desiredAngle = 0;
+  float angleError = 0;
+  desiredAngle = -0.45*totalDistanceLeft;
+  angleError = desiredAngle - angleRad;
+  angleErrorAccum += angleError*custom_delta_T;
+  vDesired = kp*(angleError) + ki*(angleErrorAccum);
+  vErrorL = vDesired - vL;
+  vErrorR = vDesired - vR;
+  vErrorAccumL += vErrorL*custom_delta_T;
+  vErrorAccumR += vErrorR*custom_delta_T;
+  leftMotorPWM = (motor_kp*vErrorL + motor_ki*vErrorAccumL);
+  rightMotorPWM = (motor_kp*vErrorR + motor_ki*vErrorAccumR);
 }
 
 uint32_t prev_time;
