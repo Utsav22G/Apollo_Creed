@@ -54,7 +54,8 @@ bool directionFlag = true;
 float vErrorAccumL = 0;
 float vErrorAccumR = 0;
 float angleErrorAccum = 0;
-float distanceAccum = -0.07*5.0;
+float meterspersecond = 0.1;
+float distanceAccum = -meterspersecond*5.0;
 
 void balanceDoDriveTicks();
 
@@ -86,11 +87,11 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   float desiredAngle = 0;
   float angleError = 0;
   if (distanceAccum < 0){
-    distanceAccum += 0.07*custom_delta_T;
+    distanceAccum += meterspersecond*custom_delta_T;
     desiredAngle = -0.45*totalDistanceLeft;
   }
   else{
-    distanceAccum += 0.05*custom_delta_T;
+    distanceAccum += meterspersecond*custom_delta_T;
     desiredAngle = -0.45*totalDistanceLeft+distanceAccum;
   }
   angleError = desiredAngle - angleRad;
