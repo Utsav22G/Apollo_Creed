@@ -76,8 +76,8 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
-  float kp = -6;
-  float ki = -36;
+  float kp = -7;
+  float ki = -44;
   float motor_kp = 500;
   float motor_ki = 5000;
   float vDesired = 0;
