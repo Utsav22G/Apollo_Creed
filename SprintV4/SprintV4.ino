@@ -56,7 +56,7 @@ bool directionFlag = true;
 float vErrorAccumL = 0;
 float vErrorAccumR = 0;
 float angleErrorAccum = 0;
-float meterspersecond = 0.1;
+float meterspersecond = 0.11;
 float distanceAccum = -meterspersecond*5.0;
 
 void balanceDoDriveTicks();

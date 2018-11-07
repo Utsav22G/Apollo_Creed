@@ -111,7 +111,6 @@ void setup()
   angle_accum = 0;
   ledGreen(0);
   ledYellow(0);
-  buzzer.playFromProgramSpace(bumblebee);
 }
 
 extern int16_t angle_prev;

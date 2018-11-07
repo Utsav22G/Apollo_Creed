@@ -77,8 +77,8 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
-  float kp = -3;
-  float ki = -22;
+  float kp = -7;
+  float ki = -44;
   float motor_kp = 500;
   float motor_ki = 5000;
   float vDesired = 0;
@@ -88,22 +88,22 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   float angleError = 0;
   if (distanceAccum < 0){
     distanceAccum += meterspersecond*custom_delta_T;
-    desiredAngle = -0.45*totalDistanceLeft;
+    desiredAngle = -0.45*totalDistanceRight;
   }
   else{
     distanceAccum += meterspersecond*custom_delta_T;
-    desiredAngle = -0.45*totalDistanceLeft+distanceAccum;
+    desiredAngle = -0.45*totalDistanceRight+distanceAccum;
   }
   angleError = desiredAngle - angleRad;
   angleErrorAccum += angleError*custom_delta_T;
-  vDesired = kp*(angleError) + ki*(angleErrorAccum);
+  vDesired = (kp*(angleError) + ki*(angleErrorAccum));
   vErrorL = vDesired - vL;
   vErrorR = vDesired - vR;
   vErrorAccumL += vErrorL*custom_delta_T;
   vErrorAccumR += vErrorR*custom_delta_T;
 
-  leftMotorPWM = (motor_kp*vErrorL + motor_ki*vErrorAccumL);
-  rightMotorPWM = 0;
+  leftMotorPWM = 0;
+  rightMotorPWM = (motor_kp*vErrorL + motor_ki*vErrorAccumL);
 }
 
 uint32_t prev_time;
