@@ -45,8 +45,6 @@ extern int32_t distanceRight;
 extern int32_t speedRight;
 extern int32_t distanceLeft;
 extern int32_t distanceRight;
-float imu_ax_average = 0.0;
-float alpha_imu_ax = 0.1;
 
 float vL, vR, prevVL, prevVR, totalDistanceLeft, totalDistanceRight;
 float leftMotorPWM = 0;
@@ -56,7 +54,7 @@ bool directionFlag = true;
 float vErrorAccumL = 0;
 float vErrorAccumR = 0;
 float angleErrorAccum = 0;
-float meterspersecond = 0.1;
+float meterspersecond = 0.04;
 float distanceAccum = -meterspersecond*5.0;
 
 void balanceDoDriveTicks();
@@ -79,8 +77,8 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
-  float kp = -7;
-  float ki = -44;
+  float kp = -3;
+  float ki = -22;
   float motor_kp = 500;
   float motor_ki = 5000;
   float vDesired = 0;
@@ -105,7 +103,7 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   vErrorAccumR += vErrorR*custom_delta_T;
 
   leftMotorPWM = (motor_kp*vErrorL + motor_ki*vErrorAccumL);
-  rightMotorPWM = (motor_kp*vErrorR + motor_ki*vErrorAccumR);
+  rightMotorPWM = 0;
 }
 
 uint32_t prev_time;
@@ -141,8 +139,8 @@ void newBalanceUpdate()
 
   // call functions to integrate encoders and gyros
   balanceUpdateSensors();
-  imu_ax_average = alpha_imu_ax*imu.a.x + (1 - alpha_imu_ax)*imu_ax_average;
-  if (imu_ax_average < 0)
+ 
+  if (imu.a.x < 0)
   {
     lyingDown();
     isBalancingStatus = false;

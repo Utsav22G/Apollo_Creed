@@ -45,8 +45,6 @@ extern int32_t distanceRight;
 extern int32_t speedRight;
 extern int32_t distanceLeft;
 extern int32_t distanceRight;
-float imu_ax_average = 0.0;
-float alpha_imu_ax = 0.1;
 
 float vL, vR, prevVL, prevVR, totalDistanceLeft, totalDistanceRight;
 float leftMotorPWM = 0;
@@ -56,8 +54,7 @@ bool directionFlag = true;
 float vErrorAccumL = 0;
 float vErrorAccumR = 0;
 float angleErrorAccum = 0;
-float meterspersecond = 0.1;
-float distanceAccum = -meterspersecond*5.0;
+
 
 void balanceDoDriveTicks();
 
@@ -88,22 +85,14 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   float vErrorR = 0;
   float desiredAngle = 0;
   float angleError = 0;
-  if (distanceAccum < 0){
-    distanceAccum += meterspersecond*custom_delta_T;
-    desiredAngle = -0.45*totalDistanceLeft;
-  }
-  else{
-    distanceAccum += meterspersecond*custom_delta_T;
-    desiredAngle = -0.45*totalDistanceLeft+distanceAccum;
-  }
+  //desiredAngle = -0.45*totalDistanceLeft;
   angleError = desiredAngle - angleRad;
   angleErrorAccum += angleError*custom_delta_T;
   vDesired = kp*(angleError) + ki*(angleErrorAccum);
-  vErrorL = vDesired - vL;
-  vErrorR = vDesired - vR;
+  vErrorL = (vDesired*0.3) - vL;
+  vErrorR = (-vDesired*0.3) - vR;
   vErrorAccumL += vErrorL*custom_delta_T;
   vErrorAccumR += vErrorR*custom_delta_T;
-
   leftMotorPWM = (motor_kp*vErrorL + motor_ki*vErrorAccumL);
   rightMotorPWM = (motor_kp*vErrorR + motor_ki*vErrorAccumR);
 }
@@ -141,8 +130,8 @@ void newBalanceUpdate()
 
   // call functions to integrate encoders and gyros
   balanceUpdateSensors();
-  imu_ax_average = alpha_imu_ax*imu.a.x + (1 - alpha_imu_ax)*imu_ax_average;
-  if (imu_ax_average < 0)
+ 
+  if (imu.a.x < 0)
   {
     lyingDown();
     isBalancingStatus = false;

@@ -32,11 +32,11 @@
 
 #include <Balboa32U4.h>
 #include "Balance.h"
-
 #define METERS_PER_CLICK 3.141592*80.0*(1/1000.0)/12.0/(162.5)
 #define MOTOR_MAX 300
 #define MAX_SPEED 0.75  // m/s
 #define FORTY_FIVE_DEGREES_IN_RADIANS 0.78
+
 
 extern int32_t angle_accum;
 extern int32_t speedLeft;
@@ -45,8 +45,8 @@ extern int32_t distanceRight;
 extern int32_t speedRight;
 extern int32_t distanceLeft;
 extern int32_t distanceRight;
-float imu_ax_average = 0.0;
-float alpha_imu_ax = 0.1;
+
+const char bumblebee[] PROGMEM = "! T144 L16 O6" "ag#gf#gf#fe fee-dc#cO5bb-" "ag#gf#gf#fe fee-dc#co4bb-" "ag#gf#gf#fe ag#gf#gf#fe" "ag#gf#fb-ag# ag#gf#ff#g#" "ag#gf#fb-ag# ag#gf#ff#g#" "ag#gf#gf#fe ff#gg#ab-ag#" "ag#gf#gf#fe ff#gg#abO5cc#" "dc#cO4bb-O5e-dc# dc#cO4bb-bO5cc#" "dc#cO4bb-O5e-dc# dc#cO4bb-bO5cc#" "dc#cO4b>cbb-a b-bO5cc#de-dc" "dc#cO4b>cbb-a b-bO5cc#de-dc" "dO4dMSdddddd e-de-O5e-e-de->e-" "dddddddd e-de->e-e-de-O6e-" "MLdO5e-dc#de-dc# de-dc#de-dc#" "de-eff#fee- de-eff#fee-" "dO4gMSgggggg a-ga->a-a-ga->a-" "gO5ggggggg a-ga->a-a-ga-O6a-" "MLfO5a-gf#ga-af# ga-gf#ga-gf#" "ga-ab-bb-aa- ga-ab-bb-aa-" "gf#fee-a-gf# gf#fee-eff#" "gf#fefee-d e-eff#ff#gg#" "ag#gf#gf#fe fee-dc#cO4bb-" "ab-ag#ab-ag# ab-ag#ab-ag#" "ab-ag#ab-ag# ab-ag#ab-ag#" "ag#gf#gf#fe fee-dc#cO3bb-" "ab-ag#ab-ag# ab-ag#ab-ag#" "ab-ag#ab-ag# ab-ag#ab-ag#" "ab-bO4cc#dd#e ff#gg#ab-bO5c" "c#dd#eff#gg# ab-ag#ab-ag#" "ag#gf#fb-ag# ag#gf#ff#g#" "ag#gf#fb-ag# ag#gf#ff#g#" "ag#gf#gf#fe ff#gg#ab-ag#" "ag#gf#gf#fe ff#gg#abO5cc#" "dc#cO4bb-O5e-dc# dc#cO4bb-bO5cc#" "dc#cO4bb-O5e-dc# dc#cO4bb-bO5cc#" "dc#cO4b>cbb-a b-bO5cc#de-dc" "dc#cO4b>cbb-a b-bO5cc#de-dc" "dO4dMSdddddd e-de-O5e-e-de->e-" "dddddddd e-de->e-e-de-O6e-" "MLdO5e-dc#de-dc# de-dc#de-dc#" "de-eff#fee- de-eff#fee-" "dO4gMSgggggg a-ga->a-a-ga->a-" "gO5ggggggg a-ga->a-a-ga-O6a-" "MLfO5a-gf#ga-af# ga-gf#ga-gf#" "ga-ab-bb-aa- ga-ab-bb-aa-" "gf#fee-a-gf# gf#fee-eff#" "gf#fefee-d e-eff#ff#gg#" "ag#gf#gf#fe fee-dc#cO4bb-" "ab-ag#ab-ag# ab-ag#ab-ag#" "ab-ag#ab-ag# ab-ag#ab-ag#" "ag#gf#gf#fe fee-dc#cO3bb-" "ab-ag#ab-ag# ab-ag#ab-ag#" "ab-ag#ab-ag# ab-ag#ab-ag#" "ab-bO4cc#dd#e ff#gg#ab-bO5c" "c#dd#eff#gg# ab-ag#ab-ag#" "ag#gf#fb-ag# ag#gf#ff#gg#" "ag#gf#fb-ag# ag#gf#ff#gg#" "ag#gf#gf#fe ff#gg#ab-ag#" "ag#gf#gf#fe ff#gg#abO6cc#" "dc#c<b<b-e-dc# dc#cO5bb-bO6cc#" "dc#c<b<b-e-dc# dc#cO5bb-bO6cc#" "dc#c<bcO5bb-a b-bO6cc#de-dc#" "dc#cO5bb-bO6cc# defgab-ag#" "ag#gf#fb-ag# ag#gf#ff#gg#" "ag#gf#fb-ag# ag#gf#ff#gg#" "a8c#de-eff# gf#fefee-d" "c#dd#eff#gg# ab-ag#ab-ag#" "a8O5c#de-eff# gf#fefee-d" "c#dd#eff#gg# ab-ag#abO6cc#" "dc#cO5bcbb-a b-ag#gf#fee-" "dc#cO4b>cbb-a b-ag#gf#fee-" "de-dc#e-de->e- de-dedfdg" "ab-ag#b>abO5b aR<ab<bO6cO4bO6c#" "L8dRL16O3ab-bO4c c#de-eff#gg#" "ab-bO5cc#de-e ff#gg#abO6cc#" "L2d O7d L4O5dR";
 
 float vL, vR, prevVL, prevVR, totalDistanceLeft, totalDistanceRight;
 float leftMotorPWM = 0;
@@ -56,8 +56,7 @@ bool directionFlag = true;
 float vErrorAccumL = 0;
 float vErrorAccumR = 0;
 float angleErrorAccum = 0;
-float meterspersecond = 0.1;
-float distanceAccum = -meterspersecond*5.0;
+
 
 void balanceDoDriveTicks();
 
@@ -88,22 +87,14 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   float vErrorR = 0;
   float desiredAngle = 0;
   float angleError = 0;
-  if (distanceAccum < 0){
-    distanceAccum += meterspersecond*custom_delta_T;
-    desiredAngle = -0.45*totalDistanceLeft;
-  }
-  else{
-    distanceAccum += meterspersecond*custom_delta_T;
-    desiredAngle = -0.45*totalDistanceLeft+distanceAccum;
-  }
+  desiredAngle = -0.45*totalDistanceLeft;
   angleError = desiredAngle - angleRad;
   angleErrorAccum += angleError*custom_delta_T;
   vDesired = kp*(angleError) + ki*(angleErrorAccum);
-  vErrorL = vDesired - vL;
-  vErrorR = vDesired - vR;
+  vErrorL = vDesired - vL+0.03;
+  vErrorR = vDesired - vR-0.03;
   vErrorAccumL += vErrorL*custom_delta_T;
   vErrorAccumR += vErrorR*custom_delta_T;
-
   leftMotorPWM = (motor_kp*vErrorL + motor_ki*vErrorAccumL);
   rightMotorPWM = (motor_kp*vErrorR + motor_ki*vErrorAccumR);
 }
@@ -120,6 +111,7 @@ void setup()
   angle_accum = 0;
   ledGreen(0);
   ledYellow(0);
+  buzzer.playFromProgramSpace(bumblebee);
 }
 
 extern int16_t angle_prev;
@@ -141,8 +133,8 @@ void newBalanceUpdate()
 
   // call functions to integrate encoders and gyros
   balanceUpdateSensors();
-  imu_ax_average = alpha_imu_ax*imu.a.x + (1 - alpha_imu_ax)*imu_ax_average;
-  if (imu_ax_average < 0)
+ 
+  if (imu.a.x < 0)
   {
     lyingDown();
     isBalancingStatus = false;
@@ -226,7 +218,6 @@ void loop()
     if(start_counter > 30)
     {
       armed_flag = 1;
-      buzzer.playFrequency(DIV_BY_10 | 445, 1000, 15);
     }
   }
 
